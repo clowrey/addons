@@ -1,6 +1,6 @@
 # Changelog
 
-## [8.0.2] - 2024-12-19
+## [8.0.1-esphome] - 2024-12-19
 
 ### Changed
 - **BREAKING**: Modified addon to work exclusively on `/config/esphome` subdirectory instead of entire `/config` directory

@@ -1,5 +1,5 @@
 ---
-version: 8.0.2
+version: 8.0.1
 slug: git_pull
 name: Git pull (ESPHome)
 description: Simple git pull to update the local ESPHome configuration from a repository
