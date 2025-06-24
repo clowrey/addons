@@ -43,24 +43,26 @@ function add-ssh-key {
 
 function git-clone {
     # create backup
-    BACKUP_LOCATION="/tmp/config-$(date +%Y-%m-%d_%H-%M-%S)"
-    bashio::log.info "[Info] Backup configuration to $BACKUP_LOCATION"
+    BACKUP_LOCATION="/tmp/esphome-config-$(date +%Y-%m-%d_%H-%M-%S)"
+    bashio::log.info "[Info] Backup esphome configuration to $BACKUP_LOCATION"
+    
+    # Create esphome directory if it doesn't exist
+    mkdir -p /config/esphome
 
     mkdir "${BACKUP_LOCATION}" || bashio::exit.nok "[Error] Creation of backup directory failed"
-    cp -rf /config/* "${BACKUP_LOCATION}" || bashio::exit.nok "[Error] Copy files to backup directory failed"
+    cp -rf /config/esphome/* "${BACKUP_LOCATION}" 2>/dev/null || true
 
-    # remove config folder content
-    rm -rf /config/{,.[!.],..?}* || bashio::exit.nok "[Error] Clearing /config failed"
+    # remove esphome folder content
+    rm -rf /config/esphome/{,.[!.],..?}* || bashio::exit.nok "[Error] Clearing /config/esphome failed"
 
     # git clone
-    bashio::log.info "[Info] Start git clone"
-    git clone "$REPOSITORY" /config || bashio::exit.nok "[Error] Git clone failed"
+    bashio::log.info "[Info] Start git clone to esphome directory"
+    git clone "$REPOSITORY" /config/esphome || bashio::exit.nok "[Error] Git clone failed"
 
-    # try to copy non yml files back
-    cp "${BACKUP_LOCATION}" "!(*.yaml)" /config 2>/dev/null
-
-    # try to copy secrets file back
-    cp "${BACKUP_LOCATION}/secrets.yaml" /config 2>/dev/null
+    # try to copy non yml files back if they exist in backup
+    if [ "$(ls -A ${BACKUP_LOCATION} 2>/dev/null)" ]; then
+        cp "${BACKUP_LOCATION}"/* /config/esphome/ 2>/dev/null || true
+    fi
 }
 
 function check-ssh-key {
@@ -80,7 +82,7 @@ fi
 
 function setup-user-password {
 if [ -n "$DEPLOYMENT_USER" ]; then
-    cd /config || return
+    cd /config/esphome || return
     bashio::log.info "[Info] setting up credential.helper for user: ${DEPLOYMENT_USER}"
     git config --system credential.helper 'store --file=/tmp/git-credentials'
 
@@ -116,14 +118,18 @@ fi
 }
 
 function git-synchronize {
-    # is /config a local git repo?
+    # Create esphome directory if it doesn't exist
+    mkdir -p /config/esphome
+    cd /config/esphome || bashio::exit.nok "[Error] Failed to cd into /config/esphome"
+    
+    # is /config/esphome a local git repo?
     if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-        bashio::log.warning "[Warn] Git repository doesn't exist"
+        bashio::log.warning "[Warn] Git repository doesn't exist in esphome directory"
         git-clone
         return
     fi
 
-    bashio::log.info "[Info] Local git repository exists"
+    bashio::log.info "[Info] Local git repository exists in esphome directory"
     # Is the local repo set to the correct origin?
     CURRENTGITREMOTEURL=$(git remote get-url --all "$GIT_REMOTE" | head -n 1)
     if [ "$CURRENTGITREMOTEURL" != "$REPOSITORY" ]; then
@@ -172,25 +178,25 @@ function git-synchronize {
 }
 
 function validate-config {
-    bashio::log.info "[Info] Checking if something has changed..."
+    bashio::log.info "[Info] Checking if something has changed in esphome directory..."
     # Compare commit ids & check config
     NEW_COMMIT=$(git rev-parse HEAD)
     if [ "$NEW_COMMIT" == "$OLD_COMMIT" ]; then
-        bashio::log.info "[Info] Nothing has changed."
+        bashio::log.info "[Info] Nothing has changed in esphome directory."
         return
     fi
-    bashio::log.info "[Info] Something has changed, checking Home-Assistant config..."
+    bashio::log.info "[Info] Something has changed in esphome directory, checking Home-Assistant config..."
     if ! bashio::core.check; then
-        bashio::log.error "[Error] Configuration updated but it does not pass the config check. Do not restart until this is fixed!"
+        bashio::log.error "[Error] ESPHome configuration updated but it does not pass the config check. Do not restart until this is fixed!"
         return
     fi
     if [ "$AUTO_RESTART" != "true" ]; then
-        bashio::log.info "[Info] Local configuration has changed. Restart required."
+        bashio::log.info "[Info] Local esphome configuration has changed. Restart required."
         return
     fi
     DO_RESTART="false"
     CHANGED_FILES=$(git diff "$OLD_COMMIT" "$NEW_COMMIT" --name-only)
-    bashio::log.info "Changed Files: $CHANGED_FILES"
+    bashio::log.info "Changed Files in esphome: $CHANGED_FILES"
     if [ -n "$RESTART_IGNORED_FILES" ]; then
         for changed_file in $CHANGED_FILES; do
             restart_required_file=""
@@ -231,7 +237,11 @@ function validate-config {
 ###################
 
 #### Main program ####
-cd /config || bashio::exit.nok "[Error] Failed to cd into /config";
+# Create esphome directory if it doesn't exist
+mkdir -p /config/esphome
+cd /config/esphome || bashio::exit.nok "[Error] Failed to cd into /config/esphome";
+
+bashio::log.info "[Info] Git pull addon configured to work on esphome subdirectory only"
 
 while true; do
     check-ssh-key

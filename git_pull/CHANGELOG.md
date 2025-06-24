@@ -1,7 +1,30 @@
 # Changelog
 
-## 8.0.1
-- Fix bashio warn(ing) logger usage breaking deployment keys
+## [8.0.2] - 2024-12-19
+
+### Changed
+- **BREAKING**: Modified addon to work exclusively on `/config/esphome` subdirectory instead of entire `/config` directory
+- Updated addon name to "Git pull (ESPHome)" to reflect focused purpose
+- Changed all git operations to work within `/config/esphome` directory only
+- Updated backup functionality to only backup esphome directory contents
+- Modified log messages throughout to reflect esphome-specific operations
+- Updated documentation to clarify addon only affects ESPHome configuration files
+- Changed default `restart_ignore` examples from Home Assistant files to ESPHome-relevant patterns
+- Added automatic creation of `/config/esphome` directory if it doesn't exist
+
+### Added
+- Enhanced safety warnings in documentation to clarify only ESPHome configs are affected
+- Added note in documentation that other Home Assistant configuration files remain untouched
+- Added informational log message indicating addon is configured for esphome subdirectory only
+
+### Migration Notes
+- **Important**: This version only manages files in `/config/esphome/` 
+- Users who previously used this addon for full configuration management should use the original addon
+- ESPHome users can now safely use this addon without affecting their main Home Assistant configuration
+- Repository should now point to an ESPHome-specific configuration repository
+
+## [8.0.1] - Previous Version
+- Original functionality for full `/config` directory management
 
 ## 8.0.0
 - Refactor git_pull to use HA Api with bashio

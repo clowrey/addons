@@ -1,4 +1,4 @@
-# Home Assistant Add-on: Git pull
+# Home Assistant Add-on: Git pull (ESPHome)
 
 ## Installation
 
@@ -10,14 +10,15 @@ Follow these steps to get the add-on installed on your system:
 
 ## WARNING
 
-The risk of complete loss is possible. Prior to starting this add-on, ensure a copy
-of your Home Assistant configuration files exists in the Github repository. Otherwise, 
-your local machine configuration folder will be overwritten with an empty configuration 
-folder and you will need to restore from a backup.
+The risk of complete loss of your ESPHome configuration is possible. Prior to starting this add-on, ensure a copy
+of your Home Assistant ESPHome configuration files exists in the Github repository. Otherwise, 
+your local `/config/esphome` folder will be overwritten with the contents from the git repository and you will need to restore from a backup.
+
+**Note:** This addon only operates on the `/config/esphome` subdirectory and will not affect any other Home Assistant configuration files.
 
 ## How to use
 
-In the configuration section, set the repository field to your repository's
+In the configuration section, set the repository field to your ESPHome repository's
 clone URL and check if any other fields need to be customized to work with
 your repository. Next,
 
@@ -26,9 +27,9 @@ your repository. Next,
 
 If the log doesn't end with an error, the add-on has successfully
 accessed your git repository. Examples of logs you might see if
-there were no errors are: `[Info] Nothing has changed.`,
-`[Info] Something has changed, checking Home-Assistant config...`,
-or `[Info] Local configuration has changed. Restart required.`.
+there were no errors are: `[Info] Nothing has changed in esphome directory.`,
+`[Info] Something has changed in esphome directory, checking Home-Assistant config...`,
+or `[Info] Local esphome configuration has changed. Restart required.`.
 
 If you made it this far, you might want to let the add-on automatically
 check for updates by setting the `active` field (a subfield of `repeat`)
@@ -43,12 +44,12 @@ git_branch: master
 git_command: pull
 git_remote: origin
 git_prune: 'false'
-repository: https://example.com/my_configs.git
+repository: https://example.com/my_esphome_configs.git
 auto_restart: false
 restart_ignore:
-  - ui-lovelace.yaml
+  - "*.log"
   - ".gitignore"
-  - exampledirectory/
+  - temp_files/
 repeat:
   active: false
   interval: 300
@@ -91,15 +92,15 @@ Branch name of the Git repo. If left empty, the currently checked out branch wil
 
 ### Option: `repository` (required)
 
-Git URL to your repository (make sure to use double quotes).
+Git URL to your ESPHome repository (make sure to use double quotes).
 
 ### Option: `auto_restart` (required)
 
-`true`/`false`: Restart Home Assistant when the configuration has changed (and is valid).
+`true`/`false`: Restart Home Assistant when the ESPHome configuration has changed (and is valid).
 
 ### Option: `restart_ignore` (optional)
 
-When `auto_restart` is enabled, changes to these files will not make HA restart. Full directories to ignore can be specified.
+When `auto_restart` is enabled, changes to these files will not make HA restart. Full directories to ignore can be specified. This applies to files within the `/config/esphome` directory.
 
 ### Option group: `repeat`
 

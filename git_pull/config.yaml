@@ -1,8 +1,8 @@
 ---
-version: 8.0.1
+version: 8.0.2
 slug: git_pull
-name: Git pull
-description: Simple git pull to update the local configuration
+name: Git pull (ESPHome)
+description: Simple git pull to update the local ESPHome configuration from a repository
 url: https://github.com/home-assistant/addons/tree/master/git_pull
 advanced: true
 arch:
@@ -24,7 +24,7 @@ options:
   git_remote: origin
   auto_restart: false
   restart_ignore:
-    - ui-lovelace.yaml
+    - "*.log"
     - .gitignore
   git_command: pull
   git_prune: false
